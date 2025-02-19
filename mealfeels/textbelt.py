@@ -10,8 +10,8 @@ logger = logging.getLogger(__name__)
 def send_message(
     phone: str,
     textbelt_api_key: str,
-    token: str,
     message: str,
+    token: str | None = None,
     reply_webhook_url: str | None = None,
 ):
     logger.debug(f"sending message to {phone} via textbelt: {message}")

@@ -8,11 +8,12 @@ dependencies = [
     "flask",
     "requests",
     "click",
-    "psycopg2"
+    "psycopg2",
+    "phonenumbers"
 ]
 
 [project.urls]
-Documentation = "mealfeels.com"
+Documentation = "https://mealfeels.com"
 
 [project.optional-dependencies]
 test = ["pytest"]
