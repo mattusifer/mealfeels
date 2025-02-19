@@ -25,8 +25,7 @@ CREATE TABLE IF NOT EXISTS feels (
   id SERIAL PRIMARY KEY,
   phone_id INT REFERENCES phones(id),
   full_description VARCHAR NOT NULL,
-  symptom VARCHAR,
-  magnitude INT,
+  symptoms JSONB,
   created_at TIMESTAMP WITH TIME ZONE default now()
 );
 

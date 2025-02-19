@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 import re
 import textwrap
+import json
 
 from flask import (
     Blueprint,
@@ -142,16 +143,15 @@ def textbelt_webhook():
                 (phone_id, parsed.description),
             )
         elif parsed.message_type == MessageType.FEEL:
-            for symptom, magnitude in parsed.symptoms.items():
-                cur.execute(
-                    textwrap.dedent(
-                        """\
-                        INSERT INTO feels (phone_id, full_description, symptom, magnitude)
-                        VALUES (%s, %s, %s, %s)
-                        """
-                    ),
-                    (phone_id, parsed.description, symptom, magnitude),
-                )
+            cur.execute(
+                textwrap.dedent(
+                    """\
+                    INSERT INTO feels (phone_id, full_description, symptoms)
+                    VALUES (%s, %s, %s, %s)
+                    """
+                ),
+                (phone_id, parsed.description, json.dumps(parsed.symptoms)),
+            )
         elif parsed.message_type == MessageType.BM:
             cur.execute(
                 "INSERT INTO bms (phone_id, bm_description) VALUES (%s, %s)",
