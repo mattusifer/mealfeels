@@ -7,9 +7,9 @@ RUN pip install --upgrade pip gunicorn
 WORKDIR /app
 ENV PYTHONPATH=/app
 
-ADD ./requirements.txt ./
-RUN cd /app && pip install -r requirements.txt
+ADD ./pyproject.toml ./entrypoint.sh ./
+RUN cd /app && pip install .
 
-ADD ./main.py ./
+ADD ./mealfeels ./mealfeels
 
-CMD ["gunicorn", "-b", "0.0.0.0", "-w", "1", "main:main()"]
+CMD ["/bin/sh", "entrypoint.sh"]

@@ -1,0 +1,41 @@
+[project]
+name = "mealfeels"
+version = "0.0.0"
+description = "Meals and feels"
+readme = "README.md"
+maintainers = [{name = "Matt", email = "mattusifer@gmail.com"}]
+dependencies = [
+    "flask",
+    "requests",
+    "click",
+    "psycopg2"
+]
+
+[project.urls]
+Documentation = "mealfeels.com"
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+# [build-system]
+# requires = ["flit_core<4"]
+# build-backend = "flit_core.buildapi"
+
+# [tool.flit.module]
+# name = "mealfeels"
+
+# [tool.flit.sdist]
+# include = [
+#     "tests/",
+# ]
+
+# [tool.pytest.ini_options]
+# testpaths = ["tests"]
+# filterwarnings = ["error"]
+
+# [tool.coverage.run]
+# branch = true
+# source = ["mealfeels", "tests"]
+
+# [tool.ruff]
+# src = ["src"]
