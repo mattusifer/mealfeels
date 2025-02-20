@@ -17,92 +17,114 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@^3"></script>
 
 <script>
-  function getRandomColor() {
-    var letters = '0123456789ABCDEF';
-    var color = '#';
-    for (var i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
+function getRandomColor() {
+  var letters = '0123456789ABCDEF';
+  var color = '#';
+  for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
+function multilineLabel(string, maxWidth) {
+  var words = string.split(" ")
+
+  var width = 0;
+  var brokenString = [""];
+  for(var i = 0; i < words.length; i++) {
+    var word = words[i]
+
+    if (width + word.length + 1 >= maxWidth) {
+      brokenString.push(word);
+      width = word.length;
+    } else {
+      brokenString[brokenString.length - 1] += " " + word;
+      width += word.length + 1;
     }
-    return color;
+
   }
 
-  const ctx = document.getElementById('myChart');
+  console.log(brokenString)
+  return brokenString;
+}
 
-  var symptoms = JSON.parse('{{ symptoms | tojson | safe }}');
+const ctx = document.getElementById('myChart');
 
-  var chartData = {};
+var symptoms = JSON.parse('{{ symptoms | tojson | safe }}');
 
-  for (const [symptomBatch, occurredAt] of symptoms) {
-    for (const [symptomName, magnitude] of Object.entries(symptomBatch)) {
-      if (!(symptomName in chartData)) {
-        chartData[symptomName] = [];
-      }
+var chartData = {};
 
-      chartData[symptomName].push({"y": magnitude, "x": occurredAt});
+for (const [symptomBatch, occurredAt] of symptoms) {
+  for (const [symptomName, magnitude] of Object.entries(symptomBatch)) {
+    if (!(symptomName in chartData)) {
+      chartData[symptomName] = [];
     }
+
+    chartData[symptomName].push({"y": magnitude, "x": occurredAt});
   }
+}
 
-  var labeledChartData = [];
-  for (const [symptom, magnitudes] of Object.entries(chartData)) {
-    var color = getRandomColor()
-    labeledChartData.push({
-      label: symptom,
-      data: magnitudes,
-      borderWidth: 1,
-      backgroundColor: color,
-      borderColor: color
-    });
-  }
-
-  var meals = JSON.parse('{{ meals | tojson | safe }}');
-
-  var annotations = {};
-  for (const [index, [meal, createdAtMillis]] of meals.entries()) {
-    annotations[index] = {
-      type: 'line',
-      scaleID: 'x',
-      value: createdAtMillis,
-      borderColor: '#000',
-      borderWidth: 2,
-      borderDash: [8, 3],
-      label: {
-        content: meal,
-        display: false,
-        color: "#fff",
-        position: 'start',
-      }
-    };
-  }
-
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      datasets: labeledChartData
-    },
-    options: {
-      scales: {
-        x: {
-          type: 'time'
-        },
-        y: {
-          suggestedMax: 10,
-          beginAtZero: true
-        }
-      },
-      plugins: {
-        annotation: {
-          annotations: annotations,
-          enter({ element }, event) {
-              element.label.options.display = true;
-              return true; // force update
-          },
-          leave({ element }, event) {
-              element.label.options.display = false;
-              return true;
-          }
-        }
-      }
-    }
+var labeledChartData = [];
+for (const [symptom, magnitudes] of Object.entries(chartData)) {
+  var color = getRandomColor()
+  labeledChartData.push({
+    label: symptom,
+    data: magnitudes,
+    borderWidth: 1,
+    backgroundColor: color,
+    borderColor: color
   });
+}
+
+var meals = JSON.parse('{{ meals | tojson | safe }}');
+
+var annotations = {};
+for (const [index, [meal, createdAtMillis]] of meals.entries()) {
+  annotations[index] = {
+    type: 'line',
+    scaleID: 'x',
+    value: createdAtMillis,
+    borderColor: '#000',
+    borderWidth: 2,
+    borderDash: [8, 3],
+    label: {
+      content: multilineLabel(meal, 50),
+      display: false,
+      color: "#fff",
+      position: 'start',
+    }
+  };
+}
+
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    datasets: labeledChartData
+  },
+  options: {
+    scales: {
+      x: {
+        type: 'time'
+      },
+      y: {
+        suggestedMax: 10,
+        beginAtZero: true
+      }
+    },
+    plugins: {
+      annotation: {
+        annotations: annotations,
+        enter({ element }, event) {
+            element.label.options.display = true;
+            return true; // force update
+        },
+        leave({ element }, event) {
+            element.label.options.display = false;
+            return true;
+        }
+      }
+    }
+  }
+});
 </script>
 {% endblock %}
