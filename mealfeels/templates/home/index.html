@@ -56,21 +56,22 @@
 
   var meals = JSON.parse('{{ meals | tojson | safe }}');
 
-  var annotations = {}
+  var annotations = {};
   for (const [index, [meal, createdAtMillis]] of meals.entries()) {
     annotations[index] = {
       type: 'line',
       scaleID: 'x',
       value: createdAtMillis,
       borderColor: '#000',
-      borderWidth: 1,
+      borderWidth: 2,
+      borderDash: [8, 3],
       label: {
         content: meal,
-        enabled: true,
-        color: getRandomColor(),
-        drawTime: 'afterDraw'
+        display: false,
+        color: "#fff",
+        position: 'start',
       }
-    }
+    };
   }
 
   new Chart(ctx, {
@@ -90,7 +91,15 @@
       },
       plugins: {
         annotation: {
-          annotations: annotations
+          annotations: annotations,
+          enter({ element }, event) {
+              element.label.options.display = true;
+              return true; // force update
+          },
+          leave({ element }, event) {
+              element.label.options.display = false;
+              return true;
+          }
         }
       }
     }
