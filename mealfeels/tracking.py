@@ -147,7 +147,7 @@ def textbelt_webhook():
                 textwrap.dedent(
                     """\
                     INSERT INTO feels (phone_id, full_description, symptoms)
-                    VALUES (%s, %s, %s, %s)
+                    VALUES (%s, %s, %s)
                     """
                 ),
                 (phone_id, parsed.description, json.dumps(parsed.symptoms)),

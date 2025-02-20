@@ -1,9 +1,99 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Home{% endblock %}</h1>
+  <h1>{% block title %}Symptom Overview: {{ phone_number }}{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-    YOU ARE LOGGED IN
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+{% endblock %}
+
+{% block footer %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@^4"></script>
+<script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@^3"></script>
+
+<script>
+  function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  const ctx = document.getElementById('myChart');
+
+  var symptoms = JSON.parse('{{ symptoms | tojson | safe }}');
+
+  var chartData = {};
+
+  for (const [symptomBatch, occurredAt] of symptoms) {
+    for (const [symptomName, magnitude] of Object.entries(symptomBatch)) {
+      if (!(symptomName in chartData)) {
+        chartData[symptomName] = [];
+      }
+
+      chartData[symptomName].push({"y": magnitude, "x": occurredAt});
+    }
+  }
+
+  var labeledChartData = [];
+  for (const [symptom, magnitudes] of Object.entries(chartData)) {
+    var color = getRandomColor()
+    labeledChartData.push({
+      label: symptom,
+      data: magnitudes,
+      borderWidth: 1,
+      backgroundColor: color,
+      borderColor: color
+    });
+  }
+
+  var meals = JSON.parse('{{ meals | tojson | safe }}');
+
+  var annotations = {}
+  for (const [index, [meal, createdAtMillis]] of meals.entries()) {
+    annotations[index] = {
+      type: 'line',
+      scaleID: 'x',
+      value: createdAtMillis,
+      borderColor: '#000',
+      borderWidth: 1,
+      label: {
+        content: meal,
+        enabled: true,
+        color: getRandomColor(),
+        drawTime: 'afterDraw'
+      }
+    }
+  }
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      datasets: labeledChartData
+    },
+    options: {
+      scales: {
+        x: {
+          type: 'time'
+        },
+        y: {
+          suggestedMax: 10,
+          beginAtZero: true
+        }
+      },
+      plugins: {
+        annotation: {
+          annotations: annotations
+        }
+      }
+    }
+  });
+</script>
 {% endblock %}

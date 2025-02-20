@@ -148,7 +148,7 @@ def load_logged_in_phone():
         cur.execute("SELECT * FROM phones WHERE id = %s", (phone_id,))
         row = cur.fetchone()
         if row is not None:
-            g.phone = row[0]
+            g.phone = row
         else:
             logger.warn(f"no phone found for logged in phone_id: {phone_id}")
             g.phone = None

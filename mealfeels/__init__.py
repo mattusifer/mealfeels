@@ -13,7 +13,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def create_app(test_config=None):
+def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY="dev",  # TODO: set this
@@ -21,12 +21,7 @@ def create_app(test_config=None):
         REPLY_WEBHOOK_URL=os.environ["REPLY_WEBHOOK_URL"],
     )
 
-    app.debug = True
-
-    if test_config is None:
-        app.config.from_pyfile("config.py", silent=True)
-    else:
-        app.config.from_mapping(test_config)
+    app.config.from_pyfile("config.py", silent=True)
 
     # crate the instance dir
     os.makedirs(app.instance_path, exist_ok=True)
