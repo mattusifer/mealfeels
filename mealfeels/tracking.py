@@ -49,7 +49,7 @@ class ParsedMessage:
 
         if identifier in ["ate", "drank", "drinking", "eat", "eating"]:
             self.message_type = MessageType.FOOD_DRINK
-        elif identifier in ["bm"]:
+        elif identifier in ["bm", "💩"]:
             self.message_type = MessageType.BM
         elif identifier in ["slept"]:
             self.message_type = MessageType.SLEEP

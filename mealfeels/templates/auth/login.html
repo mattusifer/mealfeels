@@ -9,22 +9,37 @@
     <label for="phone">Enter a phone number to start tracking:</label>
     <input type="tel"
            id="phone"
-           name="phone" />
+           name="phone"
+           maxlength="14"
+           placeholder="(123) 456 7890"/>
     <input type="submit" value="Submit" />
   </form>
 {% endblock %}
 
 {% block footer %}
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
-  />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 <script>
-const phoneInputField = document.querySelector("#phone");
-const phoneInput = window.intlTelInput(phoneInputField, {
-  utilsScript:
-    "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+window.addEventListener('load', () => {
+  const phoneInput = document.querySelector('#phone');
+  phoneInput.addEventListener('keydown', disallowNonNumericInput);
+  phoneInput.addEventListener('keyup', formatToPhone);
 });
+
+const disallowNonNumericInput = (evt) => {
+  if (evt.ctrlKey) { return; }
+  if (evt.key.length > 1) { return; }
+  if (/[0-9.]/.test(evt.key)) { return; }
+  evt.preventDefault();
+}
+
+const formatToPhone = (evt) => {
+  const digits = evt.target.value.replace(/\D/g,'').substring(0,10);
+  const areaCode = digits.substring(0,3);
+  const prefix = digits.substring(3,6);
+  const suffix = digits.substring(6,10);
+
+  if(digits.length > 6) {evt.target.value = `(${areaCode}) ${prefix} ${suffix}`;}
+  else if(digits.length > 3) {evt.target.value = `(${areaCode}) ${prefix}`;}
+  else if(digits.length > 0) {evt.target.value = `(${areaCode}`;}
+};
 </script>
 {% endblock %}

@@ -1,12 +1,19 @@
+* {
+    box-sizing: border-box;
+}
 html {
     font-family: 'Nunito', sans-serif;
     background: #fff;
-    margin: 0 0;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 body {
-    width: 100%;
+    min-width: 100%;
     background: white;
-    margin: 0 0;
+    margin: 0;
+    padding: 0;
 }
 h1 {
     color: #000;
@@ -20,8 +27,14 @@ hr {
     border-top: 1px solid lightgray;
 }
 nav {
+    position: relative;
     height: 3rem;
     width: 100%;
+}
+@media only screen and (max-width: 600px) {
+    nav {
+        height: 5rem;
+    }
 }
 nav a {
     text-decoration: none;
@@ -32,7 +45,12 @@ nav h1 {
     top: 0;
     left: 0;
     margin: 0;
-    padding: 1rem 2rem;
+    padding: 1.5rem 2rem;
+}
+@media only screen and (max-width: 600px) {
+    nav h1 {
+        padding: 1.75rem 2rem;
+    }
 }
 nav ul  {
     position: absolute;
@@ -40,7 +58,12 @@ nav ul  {
     right: 0;
     list-style: none;
     margin: 0;
-    padding: 1.5rem 2rem;
+    padding: 2rem;
+}
+@media only screen and (max-width: 600px) {
+    nav ul {
+        padding: 2rem;
+    }
 }
 nav ul li {
     display: inline;
@@ -49,12 +72,42 @@ nav ul li {
 #index {
     max-width: 600px;
     margin: 0 auto;
+    text-align: center;
+}
+#demo-container {
+    position: relative;
+    margin: 0 auto;
+    width: 400px;
+    height: 475px;
+}
+#demo-container #iphone-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+#demo-container #sms-demo {
+    position: absolute;
+    top: 42px;
+    left: 90px;
+    width: 220px;
+}
+@media only screen and (max-width: 600px) {
+    #demo-container {
+        width: 300px;
+        height: 350px;
+    }
+    #demo-container #sms-demo {
+        top: 30px;
+        left: 65px;
+        width: 170px;
+    }
 }
 .content {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 1rem 1rem;
+    padding: 0 3rem;
 }
 @media only screen and (max-width: 1000px) {
     .content {

@@ -6,7 +6,18 @@
 
 {% block content %}
   <div id="index">
-    Mealfeels allows you to track your meals and various symptoms, entirely via SMS.
+    The easiest way to track symptoms for chronic health issues:
+    <br>
+    <b>just send a text.</b>
+    <br><br>
+    <div id="demo-container">
+             <img id="sms-demo" src="{{ url_for('static', filename='sms_demo.gif') }}">
+             <img id="iphone-frame" src="{{ url_for('static', filename='iphone_frame.png') }}">
+    </div>
+    <br><br>
+    Correlate meals and other habits with spikes in your symptoms.
+    <br>
+    Learn how to optimize your quality of life.
   </div>
 {% endblock %}
 
