@@ -13,9 +13,9 @@ bp = Blueprint("home", __name__)
 logger = logging.getLogger(__name__)
 
 
-@bp.route("/")
+@bp.route("/symptoms")
 @login_required
-def index():
+def symptoms():
     logged_in_phone_id = g.phone[0]
     phone_number = phonenumbers.format_number(
         phonenumbers.parse(g.phone[1], "US"),
@@ -49,5 +49,5 @@ def index():
     meals = list(cur.fetchall())
 
     return render_template(
-        "home/index.html", phone_number=phone_number, symptoms=symptoms, meals=meals
+        "home/symptoms.html", phone_number=phone_number, symptoms=symptoms, meals=meals
     )

@@ -1,13 +1,16 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Verify{% endblock %}</h1>
+  <h1>{% block title %}Verify Phone{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
   <form method="post">
-    <label for="verification_code">Code</label>
-    <input name="verification_code" id="verification_code" pattern="[0-9]{6}" required>
-    <input type="submit" value="Submit">
+    <label for="verification_code">Enter the code that was sent via SMS:</label>
+    <input name="verification_code" id="verification_code" pattern="[0-9]{6}" maxlength="6" required>
+    <input type="submit" value="Log in">
   </form>
+{% endblock %}
+
+{% block footer %}
 {% endblock %}

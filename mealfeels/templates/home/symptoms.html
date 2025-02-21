@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Symptom Overview: {{ phone_number }}{% endblock %}</h1>
+  <h3>{% block title %}Symptom Overview: {{ phone_number }}{% endblock %}</h3>
 {% endblock %}
 
 {% block content %}
@@ -86,9 +86,9 @@ for (const [index, [meal, createdAtMillis]] of meals.entries()) {
     type: 'line',
     scaleID: 'x',
     value: createdAtMillis,
-    borderColor: '#000',
-    borderWidth: 2,
-    borderDash: [8, 3],
+    borderColor: '#aaa',
+    borderWidth: 8,
+    borderDash: [3, 8],
     label: {
       content: multilineLabel(meal, 50),
       display: false,

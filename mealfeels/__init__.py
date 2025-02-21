@@ -1,7 +1,7 @@
 import os
 import logging
 
-from flask import Flask
+from flask import Flask, render_template
 
 from . import auth, db, tracking, home
 
@@ -30,12 +30,14 @@ def create_app():
     def healthcheck():
         return "OK"
 
+    @app.route("/")
+    def index():
+        return render_template("index.html")
+
     db.init_app(app)
 
     app.register_blueprint(auth.bp)
     app.register_blueprint(tracking.bp)
     app.register_blueprint(home.bp)
-
-    app.add_url_rule("/", endpoint="index")
 
     return app

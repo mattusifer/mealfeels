@@ -16,7 +16,7 @@ dependencies = [
 Documentation = "https://mealfeels.com"
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = ["pytest", "livereload"]
 
 # [build-system]
 # requires = ["flit_core<4"]

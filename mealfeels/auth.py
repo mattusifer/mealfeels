@@ -2,6 +2,7 @@ import functools
 import secrets
 from random import randint
 import textwrap
+import os
 import logging
 
 from flask import (
@@ -129,7 +130,7 @@ def verify():
 
                 session.clear()
                 session["phone_id"] = phone_id
-                return redirect(url_for("index"))
+                return redirect(url_for("home.symptoms"))
 
         flash(error)
 
@@ -138,7 +139,10 @@ def verify():
 
 @bp.before_app_request
 def load_logged_in_phone():
-    phone_id = session.get("phone_id")
+    if current_app.config.get("LOCAL_DEV"):
+        phone_id = 1
+    else:
+        phone_id = session.get("phone_id")
 
     if phone_id is None:
         g.phone = None

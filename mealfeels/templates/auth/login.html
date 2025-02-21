@@ -6,8 +6,25 @@
 
 {% block content %}
   <form method="post">
-    <label for="phone">Phone Number</label>
-    <input type="tel" name="phone" id="phone" required>
-    <input type="submit" value="Log In">
+    <label for="phone">Enter a phone number to start tracking:</label>
+    <input type="tel"
+           id="phone"
+           name="phone" />
+    <input type="submit" value="Submit" />
   </form>
+{% endblock %}
+
+{% block footer %}
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
+  />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+<script>
+const phoneInputField = document.querySelector("#phone");
+const phoneInput = window.intlTelInput(phoneInputField, {
+  utilsScript:
+    "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+});
+</script>
 {% endblock %}
