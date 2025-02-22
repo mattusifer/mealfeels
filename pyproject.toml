@@ -9,7 +9,8 @@ dependencies = [
     "requests",
     "click",
     "psycopg2",
-    "phonenumbers"
+    "phonenumbers",
+    "twilio",
 ]
 
 [project.urls]
