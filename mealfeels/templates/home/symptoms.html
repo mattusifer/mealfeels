@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h3>{% block title %}Symptom Overview: {{ phone_number }}{% endblock %}</h3>
+  <h3>{% block title %}Symptom Tracker{% endblock %}</h3>
 {% endblock %}
 
 {% block content %}
@@ -19,15 +19,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@^2"></script>
 
 <script>
-function getRandomColor() {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
-
 function multilineLabel(createdAtMillis, string, maxWidth) {
   var createdAtTime = new Date(createdAtMillis).toLocaleTimeString().replace(/(.*)\D\d+/, '$1');
   var words = string.split(" ")
@@ -68,13 +59,10 @@ for (const [symptomBatch, occurredAt] of symptoms) {
 
 var labeledChartData = [];
 for (const [symptom, magnitudes] of Object.entries(chartData)) {
-  var color = getRandomColor()
   labeledChartData.push({
-    label: 'hi',
+    label: symptom,
     data: magnitudes,
     borderWidth: 1,
-    <!-- backgroundColor: color, -->
-    <!-- borderColor: color -->
   });
 }
 
