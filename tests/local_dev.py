@@ -26,6 +26,8 @@ os.environ |= {
 
 root_folder = (Path(__file__).parent.parent / "mealfeels").absolute()
 
+subprocess.run(["docker", "compose", "up", "-d"], check=True)
+
 app = create_app()
 app.debug = True
 app.config["LOCAL_DEV"] = True

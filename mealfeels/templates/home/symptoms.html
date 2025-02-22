@@ -1,16 +1,45 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h3>{% block title %}Symptom Tracker{% endblock %}</h3>
+  <h1>{% block title %}Symptom Tracker{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
+<!-- chart -->
 <div>
-  <canvas id="myChart" style="width:100%"></canvas>
+  <canvas id="symptom-chart"></canvas>
+</div>
+
+<!-- data table -->
+<div>
+<table id="symptom-table" class="display">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Type</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody id="symptom-table-body">
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>Time</th>
+            <th>Type</th>
+            <th>Description</th>
+        </tr>
+    </tfoot>
+</table>
 </div>
 {% endblock %}
 
 {% block footer %}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css" />
+<script
+  src="https://code.jquery.com/jquery-3.7.1.min.js"
+  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+  crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@^2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@^4"></script>
 <script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
@@ -41,14 +70,18 @@ function multilineLabel(createdAtMillis, string, maxWidth) {
   return brokenString;
 }
 
-const ctx = document.getElementById('myChart');
+const ctx = document.getElementById('symptom-chart');
 
 var symptoms = JSON.parse('{{ symptoms | tojson | safe }}');
+var meals = JSON.parse('{{ meals | tojson | safe }}');
 
+var tableElement = document.getElementById('symptom-table-body')
 var chartData = {};
 
 for (const [symptomBatch, occurredAt] of symptoms) {
   for (const [symptomName, magnitude] of Object.entries(symptomBatch)) {
+    tableElement.innerHTML += `<tr><td>${new Date(occurredAt).toISOString()}</td><td>Symptom</td><td>${symptomName}: ${magnitude}</td></tr>`
+
     if (!(symptomName in chartData)) {
       chartData[symptomName] = [];
     }
@@ -66,10 +99,10 @@ for (const [symptom, magnitudes] of Object.entries(chartData)) {
   });
 }
 
-var meals = JSON.parse('{{ meals | tojson | safe }}');
-
 var annotations = {};
 for (const [index, [meal, createdAtMillis]] of meals.entries()) {
+  tableElement.innerHTML += `<tr><td>${new Date(createdAtMillis).toISOString()}</td><td>Meal</td><td>${meal}</td></tr>`
+
   annotations[index] = {
     type: 'line',
     scaleID: 'x',
@@ -106,12 +139,17 @@ new Chart(ctx, {
     plugins: {
       annotation: {
         annotations: annotations,
-        enter({ element }, event) {
+        enter({ element, target }, event) {
             element.label.options.display = true;
+            element.options.borderWidth = 6;
+            element.options.borderDash = [];
             return true; // force update
         },
         leave({ element }, event) {
             element.label.options.display = false;
+            element.options.borderWidth = 2;
+            element.options.borderDash = [4, 5];
+            return true; // force update
         }
       },
       zoom: {
@@ -132,5 +170,34 @@ new Chart(ctx, {
     }
   }
 });
+// Setup - add a text input to each footer cell
+$('#symptom-table tfoot th').each( function () {
+    var title = $('#symptom-table thead th').eq( $(this).index() ).text();
+    $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+} );
+
+var table = new DataTable("#symptom-table", {
+    paging: false,
+    info: false,
+    scrollCollapse: true,
+    scrollY: '400px',
+    order: [[0, 'desc']],
+    columnDefs: [
+        {
+            targets: 0,
+            render: DataTable.render.datetime()
+        }
+    ]
+});
+
+// Apply the search
+table.columns().eq( 0 ).each( function ( colIdx ) {
+    $( 'input', table.column( colIdx ).footer() ).on( 'keyup change', function () {
+        table
+            .column( colIdx )
+            .search( this.value )
+            .draw();
+    } );
+} );
 </script>
 {% endblock %}
