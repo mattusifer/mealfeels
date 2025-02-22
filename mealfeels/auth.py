@@ -75,7 +75,7 @@ def login():
             send_message(
                 phone,
                 current_app.config["TEXTBELT_API_KEY"],
-                f"👋 Hello from mealfeels. Your verification code is {verification_code}.",
+                f"Your Mealfeels verification code is {verification_code}.",
             )
 
             return redirect(url_for("auth.verify", phone=phone, token=token))
@@ -123,7 +123,7 @@ def verify():
                 send_message(
                     phone,
                     current_app.config["TEXTBELT_API_KEY"],
-                    "👋 Welcome to mealfeels. Respond to this text to start tracking.",
+                    "👋 Welcome to Mealfeels. Respond to this text to start tracking.",
                     token=token,
                     reply_webhook_url=current_app.config["REPLY_WEBHOOK_URL"],
                 )

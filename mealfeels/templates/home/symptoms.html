@@ -6,7 +6,7 @@
 
 {% block content %}
 <div>
-  <canvas id="myChart"></canvas>
+  <canvas id="myChart" style="width:100%"></canvas>
 </div>
 {% endblock %}
 
@@ -28,11 +28,12 @@ function getRandomColor() {
   return color;
 }
 
-function multilineLabel(string, maxWidth) {
+function multilineLabel(createdAtMillis, string, maxWidth) {
+  var createdAtTime = new Date(createdAtMillis).toLocaleTimeString().replace(/(.*)\D\d+/, '$1');
   var words = string.split(" ")
 
   var width = 0;
-  var brokenString = [""];
+  var brokenString = ["(" + createdAtTime + ")", ""];
   for(var i = 0; i < words.length; i++) {
     var word = words[i]
 
@@ -46,7 +47,6 @@ function multilineLabel(string, maxWidth) {
 
   }
 
-  console.log(brokenString)
   return brokenString;
 }
 
@@ -70,11 +70,11 @@ var labeledChartData = [];
 for (const [symptom, magnitudes] of Object.entries(chartData)) {
   var color = getRandomColor()
   labeledChartData.push({
-    label: symptom,
+    label: 'hi',
     data: magnitudes,
     borderWidth: 1,
-    backgroundColor: color,
-    borderColor: color
+    <!-- backgroundColor: color, -->
+    <!-- borderColor: color -->
   });
 }
 
@@ -86,11 +86,13 @@ for (const [index, [meal, createdAtMillis]] of meals.entries()) {
     type: 'line',
     scaleID: 'x',
     value: createdAtMillis,
-    borderColor: '#aaa',
-    borderWidth: 8,
-    borderDash: [3, 8],
+    backgroundColor: '#000',
+    width: '5',
+    borderColor: 'rgba(0,0,0,0.5)',
+    borderWidth: 2,
+    borderDash: [4, 5],
     label: {
-      content: multilineLabel(meal, 50),
+      content: multilineLabel(createdAtMillis, meal, 50),
       display: false,
       color: "#fff",
       position: 'start',
@@ -122,7 +124,6 @@ new Chart(ctx, {
         },
         leave({ element }, event) {
             element.label.options.display = false;
-            return true;
         }
       },
       zoom: {
