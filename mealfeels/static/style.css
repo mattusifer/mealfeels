@@ -180,3 +180,9 @@ nav ul li a#start-tracking:hover {
 .content form input[type=submit]:hover {
     background: #ccc;
 }
+#symptom-chart {
+    display: block;
+    height: 400px;
+    width: 900px;
+    margin: 0 auto;
+}

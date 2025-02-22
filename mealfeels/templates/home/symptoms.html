@@ -5,19 +5,12 @@
 {% endblock %}
 
 {% block content %}
-<div>
-  <canvas id="myChart" style="width:100%"></canvas>
+<div id="symptom-chart">
 </div>
 {% endblock %}
 
 {% block footer %}
-<script src="https://cdn.jsdelivr.net/npm/hammerjs@^2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@^4"></script>
-<script src="https://cdn.jsdelivr.net/npm/moment@^2"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@^1"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@^3"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@^2"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
 <script>
 function getRandomColor() {
   var letters = '0123456789ABCDEF';
@@ -28,6 +21,77 @@ function getRandomColor() {
   return color;
 }
 
+var symptoms = JSON.parse('{{ symptoms | tojson | safe }}');
+var meals = JSON.parse('{{ meals | tojson | safe }}');
+
+var chartData = {};
+
+for (const [symptomBatch, occurredAt] of symptoms) {
+  for (const [symptomName, magnitude] of Object.entries(symptomBatch)) {
+    if (!(symptomName in chartData)) {
+      chartData[symptomName] = [];
+    }
+
+    chartData[symptomName].push([new Date(occurredAt), magnitude]);
+  }
+}
+
+var series = [];
+for (const [symptom, magnitudes] of Object.entries(chartData)) {
+  series.push({
+    name: symptom,
+    type: 'line',
+    smooth: true,
+    data: magnitudes
+  });
+}
+
+var mealLines = [];
+for (const [index, [meal, createdAtMillis]] of meals.entries()) {
+  mealLines.push({
+    xAxis: new Date(createdAtMillis),
+    name: meal,
+  })
+}
+series.push({
+  name: 'meals',
+  type: 'bar',
+  markLine: {
+    data: mealLines,
+    label: {
+      formatter: '{b}'
+    }
+  }
+});
+
+var myChart = echarts.init(document.getElementById('symptom-chart'));
+
+var option = {
+  tooltip: {
+    trigger: 'axis'
+  },
+  legend: {
+    data: chartData.keys
+  },
+  xAxis: {
+    type: 'time',
+  },
+  yAxis: {
+    type: 'value',
+  },
+  series: series,
+  dataZoom: [
+    {
+      type: 'slider',
+      <!-- zoomOnMouseWheel: 'ctrl' -->
+    }
+ ],
+};
+
+// Display the chart using the configuration items and data just specified.
+myChart.setOption(option);
+
+/*
 function multilineLabel(createdAtMillis, string, maxWidth) {
   var createdAtTime = new Date(createdAtMillis).toLocaleTimeString().replace(/(.*)\D\d+/, '$1');
   var words = string.split(" ")
@@ -73,8 +137,8 @@ for (const [symptom, magnitudes] of Object.entries(chartData)) {
     label: 'hi',
     data: magnitudes,
     borderWidth: 1,
-    <!-- backgroundColor: color, -->
-    <!-- borderColor: color -->
+    backgroundColor: color,
+    borderColor: color
   });
 }
 
@@ -144,5 +208,6 @@ new Chart(ctx, {
     }
   }
 });
+*/
 </script>
 {% endblock %}
