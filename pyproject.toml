@@ -5,11 +5,19 @@ description = "Meals and feels"
 readme = "README.md"
 maintainers = [{name = "Matt", email = "mattusifer@gmail.com"}]
 dependencies = [
-    "flask",
+    # flask/http
     "requests",
+    "flask",
     "click",
+
+    # db
     "psycopg2",
-    "phonenumbers"
+
+    # number parsing
+    "phonenumbers",
+
+    # encryption
+    "pycryptodome"
 ]
 
 [project.urls]

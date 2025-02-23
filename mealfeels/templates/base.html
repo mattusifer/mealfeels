@@ -23,7 +23,6 @@
   <h1><a href="{{ url_for('index') }}">Mealfeels</a></h1>
   <ul>
     {% if g.phone %}
-      <li><span>{{ g.phone['phone'] }}</span>
       <li><a href="{{ url_for('home.symptoms') }}">Symptom Tracker</a>
       <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
     {% else %}

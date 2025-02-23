@@ -4,35 +4,36 @@ CREATE TABLE IF NOT EXISTS phones (
   token VARCHAR NOT NULL,
   verification_code VARCHAR,
   verified BOOLEAN NOT NULL DEFAULT false,
+  public_key bytea,
   created_at TIMESTAMP WITH TIME ZONE default now()
 );
 
 CREATE TABLE IF NOT EXISTS bms (
   id SERIAL PRIMARY KEY,
   phone_id INT REFERENCES phones(id),
-  bm_description VARCHAR NOT NULL,
+  bm_description BYTEA,
   created_at TIMESTAMP WITH TIME ZONE default now()
 );
 
 CREATE TABLE IF NOT EXISTS meals (
   id SERIAL PRIMARY KEY,
   phone_id INT REFERENCES phones(id),
-  meal VARCHAR NOT NULL,
+  meal BYTEA NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE default now()
 );
 
 CREATE TABLE IF NOT EXISTS feels (
   id SERIAL PRIMARY KEY,
   phone_id INT REFERENCES phones(id),
-  full_description VARCHAR NOT NULL,
-  symptoms JSONB,
+  full_description BYTEA NOT NULL,
+  symptoms BYTEA,
   created_at TIMESTAMP WITH TIME ZONE default now()
 );
 
 CREATE TABLE IF NOT EXISTS sleeps (
   id SERIAL PRIMARY KEY,
   phone_id INT REFERENCES phones(id),
-  description VARCHAR NOT NULL,
+  description BYTEA NOT NULL,
   hours INT,
   created_at TIMESTAMP WITH TIME ZONE default now()
 );

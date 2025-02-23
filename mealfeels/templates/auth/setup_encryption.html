@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Setup Encryption{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <p>Welcome to Mealfeels!</p>
+
+  {% if newUser %}
+  <form method="post">
+      Here is your private key. Save this somewhere safe.
+      <pre id="privateKey"></pre>
+      <input type="submit" value="OK">
+  </form>
+  {% else %}
+  <form onsubmit="savePrivateKey(event)" >
+      <label for="privatekey">Enter your private key:</label>
+      <textarea name="privatekey" />
+      <input type="submit" value="Submit" />
+  </form>
+  {% endif %}
+{% endblock %}
+
+{% block footer %}
+  <script>
+   {% if newUser %}
+   const encryptionAlgorithm = {
+       name: "RSA-OAEP",
+       modulusLength: 4096,
+       publicExponent: new Uint8Array([1, 0, 1]),
+       extractable: true,
+       hash: {
+           name: "SHA-256"
+       }
+   };
+
+   async function generateKeys() {
+       const keyPair = await window.crypto.subtle.generateKey(
+           encryptionAlgorithm,
+           true,
+           ["encrypt", "decrypt"]
+       );
+
+       // TODO: wrapKey to encrypt the private key
+       const exportedPrivateKeyBytes = await window.crypto.subtle.exportKey(
+           "jwk",
+           keyPair.privateKey
+       )
+       const exportedPrivateKey = JSON.stringify(exportedPrivateKeyBytes, null, " ");
+
+       const exportedPublicKeyBytes = await window.crypto.subtle.exportKey(
+           "jwk",
+           keyPair.publicKey
+       )
+       var setPublicKeyResponse = await fetch("{{ url_for('auth.set_public_key') }}", {
+           method: "POST",
+           body: exportedPublicKeyBytes
+       });
+
+       return [setPublicKeyResponse, exportedPrivateKey]
+   }
+
+   generateKeys().then(([setPublicKeyResponse, exportedPrivateKey]) => {
+       console.log(setPublicKeyResponse);
+       if (setPublicKeyResponse.status == 201) {
+           localStorage.setItem("mealfeels-private-key", exportedPrivateKey)
+           document.getElementById("privateKey").innerHTML = exportedPrivateKey;
+       } else {
+           document.getElementById("privateKey").innerHTML = "Error sending public key to server."
+       }
+   });
+   {% endif %}
+  </script>
+{% endblock %}

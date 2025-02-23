@@ -36,9 +36,9 @@
 {% block footer %}
 <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.min.css" />
 <script
-  src="https://code.jquery.com/jquery-3.7.1.min.js"
-  integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
-  crossorigin="anonymous"></script>
+    src="https://code.jquery.com/jquery-3.7.1.min.js"
+    integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+    crossorigin="anonymous"></script>
 <script src="https://cdn.datatables.net/2.2.2/js/dataTables.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@^2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@^4"></script>
@@ -48,156 +48,156 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@^2"></script>
 
 <script>
-function multilineLabel(createdAtMillis, string, maxWidth) {
-  var createdAtTime = new Date(createdAtMillis).toLocaleTimeString().replace(/(.*)\D\d+/, '$1');
-  var words = string.split(" ")
+ function multilineLabel(createdAtMillis, string, maxWidth) {
+     var createdAtTime = new Date(createdAtMillis).toLocaleTimeString().replace(/(.*)\D\d+/, '$1');
+     var words = string.split(" ")
 
-  var width = 0;
-  var brokenString = ["(" + createdAtTime + ")", ""];
-  for(var i = 0; i < words.length; i++) {
-    var word = words[i]
+     var width = 0;
+     var brokenString = ["(" + createdAtTime + ")", ""];
+     for(var i = 0; i < words.length; i++) {
+         var word = words[i]
 
-    if (width + word.length + 1 >= maxWidth) {
-      brokenString.push(word);
-      width = word.length;
-    } else {
-      brokenString[brokenString.length - 1] += " " + word;
-      width += word.length + 1;
-    }
+         if (width + word.length + 1 >= maxWidth) {
+             brokenString.push(word);
+             width = word.length;
+         } else {
+             brokenString[brokenString.length - 1] += " " + word;
+             width += word.length + 1;
+         }
 
-  }
+     }
 
-  return brokenString;
-}
+     return brokenString;
+ }
 
-const ctx = document.getElementById('symptom-chart');
+ var privateKey = localStorage.getItem("mealfeels-private-key");
+ var symptoms = JSON.parse('{{ symptoms | tojson | safe }}');
+ var meals = JSON.parse('{{ meals | tojson | safe }}');
 
-var symptoms = JSON.parse('{{ symptoms | tojson | safe }}');
-var meals = JSON.parse('{{ meals | tojson | safe }}');
+ const ctx = document.getElementById('symptom-chart');
+ var tableElement = document.getElementById('symptom-table-body')
+ var chartData = {};
 
-var tableElement = document.getElementById('symptom-table-body')
-var chartData = {};
+ for (const [symptomBatch, occurredAt] of symptoms) {
+     for (const [symptomName, magnitude] of Object.entries(symptomBatch)) {
+         tableElement.innerHTML += `<tr><td>${new Date(occurredAt).toISOString()}</td><td>Symptom</td><td>${symptomName}: ${magnitude}</td></tr>`
 
-for (const [symptomBatch, occurredAt] of symptoms) {
-  for (const [symptomName, magnitude] of Object.entries(symptomBatch)) {
-    tableElement.innerHTML += `<tr><td>${new Date(occurredAt).toISOString()}</td><td>Symptom</td><td>${symptomName}: ${magnitude}</td></tr>`
+         if (!(symptomName in chartData)) {
+             chartData[symptomName] = [];
+         }
 
-    if (!(symptomName in chartData)) {
-      chartData[symptomName] = [];
-    }
+         chartData[symptomName].push({"y": magnitude, "x": occurredAt});
+     }
+ }
 
-    chartData[symptomName].push({"y": magnitude, "x": occurredAt});
-  }
-}
+ var labeledChartData = [];
+ for (const [symptom, magnitudes] of Object.entries(chartData)) {
+     labeledChartData.push({
+         label: symptom,
+         data: magnitudes,
+         borderWidth: 1,
+     });
+ }
 
-var labeledChartData = [];
-for (const [symptom, magnitudes] of Object.entries(chartData)) {
-  labeledChartData.push({
-    label: symptom,
-    data: magnitudes,
-    borderWidth: 1,
-  });
-}
+ var annotations = {};
+ for (const [index, [meal, createdAtMillis]] of meals.entries()) {
+     tableElement.innerHTML += `<tr><td>${new Date(createdAtMillis).toISOString()}</td><td>Meal</td><td>${meal}</td></tr>`
 
-var annotations = {};
-for (const [index, [meal, createdAtMillis]] of meals.entries()) {
-  tableElement.innerHTML += `<tr><td>${new Date(createdAtMillis).toISOString()}</td><td>Meal</td><td>${meal}</td></tr>`
+     annotations[index] = {
+         type: 'line',
+         scaleID: 'x',
+         value: createdAtMillis,
+         backgroundColor: '#000',
+         width: '5',
+         borderColor: 'rgba(0,0,0,0.5)',
+         borderWidth: 2,
+         borderDash: [4, 5],
+         label: {
+             content: multilineLabel(createdAtMillis, meal, 50),
+             display: false,
+             color: "#fff",
+             position: 'start',
+         }
+     };
+ }
 
-  annotations[index] = {
-    type: 'line',
-    scaleID: 'x',
-    value: createdAtMillis,
-    backgroundColor: '#000',
-    width: '5',
-    borderColor: 'rgba(0,0,0,0.5)',
-    borderWidth: 2,
-    borderDash: [4, 5],
-    label: {
-      content: multilineLabel(createdAtMillis, meal, 50),
-      display: false,
-      color: "#fff",
-      position: 'start',
-    }
-  };
-}
+ new Chart(ctx, {
+     type: 'line',
+     data: {
+         datasets: labeledChartData
+     },
+     options: {
+         scales: {
+             x: {
+                 type: 'time'
+             },
+             y: {
+                 suggestedMax: 10,
+                 beginAtZero: true
+             }
+         },
+         plugins: {
+             annotation: {
+                 annotations: annotations,
+                 enter({ element, target }, event) {
+                     element.label.options.display = true;
+                     element.options.borderWidth = 6;
+                     element.options.borderDash = [];
+                     return true; // force update
+                 },
+                 leave({ element }, event) {
+                     element.label.options.display = false;
+                     element.options.borderWidth = 2;
+                     element.options.borderDash = [4, 5];
+                     return true; // force update
+                 }
+             },
+             zoom: {
+                 pan: {
+                     enabled: true,
+                     mode: 'x',
+                 },
+                 zoom: {
+                     wheel: {
+                         enabled: true
+                     },
+                     pinch: {
+                         enabled: true
+                     },
+                     mode: 'x'
+                 }
+             }
+         }
+     }
+ });
+ // Setup - add a text input to each footer cell
+ $('#symptom-table tfoot th').each( function () {
+     var title = $('#symptom-table thead th').eq( $(this).index() ).text();
+     $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+ } );
 
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    datasets: labeledChartData
-  },
-  options: {
-    scales: {
-      x: {
-        type: 'time'
-      },
-      y: {
-        suggestedMax: 10,
-        beginAtZero: true
-      }
-    },
-    plugins: {
-      annotation: {
-        annotations: annotations,
-        enter({ element, target }, event) {
-            element.label.options.display = true;
-            element.options.borderWidth = 6;
-            element.options.borderDash = [];
-            return true; // force update
-        },
-        leave({ element }, event) {
-            element.label.options.display = false;
-            element.options.borderWidth = 2;
-            element.options.borderDash = [4, 5];
-            return true; // force update
-        }
-      },
-      zoom: {
-        pan: {
-          enabled: true,
-          mode: 'x',
-        },
-        zoom: {
-          wheel: {
-            enabled: true
-          },
-          pinch: {
-            enabled: true
-          },
-          mode: 'x'
-        }
-      }
-    }
-  }
-});
-// Setup - add a text input to each footer cell
-$('#symptom-table tfoot th').each( function () {
-    var title = $('#symptom-table thead th').eq( $(this).index() ).text();
-    $(this).html( '<input type="text" placeholder="Search '+title+'" />' );
-} );
+ var table = new DataTable("#symptom-table", {
+     paging: false,
+     info: false,
+     scrollCollapse: true,
+     scrollY: '400px',
+     order: [[0, 'desc']],
+     columnDefs: [
+         {
+             targets: 0,
+             render: DataTable.render.datetime()
+         }
+     ]
+ });
 
-var table = new DataTable("#symptom-table", {
-    paging: false,
-    info: false,
-    scrollCollapse: true,
-    scrollY: '400px',
-    order: [[0, 'desc']],
-    columnDefs: [
-        {
-            targets: 0,
-            render: DataTable.render.datetime()
-        }
-    ]
-});
-
-// Apply the search
-table.columns().eq( 0 ).each( function ( colIdx ) {
-    $( 'input', table.column( colIdx ).footer() ).on( 'keyup change', function () {
-        table
-            .column( colIdx )
-            .search( this.value )
-            .draw();
-    } );
-} );
+ // Apply the search
+ table.columns().eq( 0 ).each( function ( colIdx ) {
+     $( 'input', table.column( colIdx ).footer() ).on( 'keyup change', function () {
+         table
+             .column( colIdx )
+             .search( this.value )
+             .draw();
+     } );
+ } );
 </script>
 {% endblock %}

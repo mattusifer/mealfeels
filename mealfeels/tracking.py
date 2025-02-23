@@ -19,6 +19,8 @@ from flask import (
 import phonenumbers
 from phonenumbers.phonenumberutil import NumberParseException
 from werkzeug.exceptions import abort
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
 
 from mealfeels.db import get_db
 from mealfeels.textbelt import verify_request, send_message
@@ -81,6 +83,16 @@ class ParsedMessage:
             self.message_type = MessageType.UNKNOWN
 
 
+def _encrypt(string: str, public_key: bytes | None) -> bytes:
+    if public_key is None:
+        return string.encode("utf-8")
+    else:
+        key = RSA.importKey(public_key)
+        cipher = PKCS1_OAEP.new(key)
+
+        return cipher.encrypt(message)
+
+
 @bp.route("/textbelt-webhook", methods=["POST"])
 def textbelt_webhook():
     api_key = current_app.config["TEXTBELT_API_KEY"]
@@ -110,7 +122,7 @@ def textbelt_webhook():
     db = get_db()
     cur = db.cursor()
 
-    cur.execute("select id, token from phones where phone = %s", (phone,))
+    cur.execute("select id, token, public_key from phones where phone = %s", (phone,))
     result = cur.fetchone()
     if result is None:
         send_message(
@@ -120,7 +132,7 @@ def textbelt_webhook():
         )
         return "OK"
 
-    phone_id, actual_token = result
+    phone_id, actual_token, public_key = result
 
     if actual_token != token:
         logger.error(f"invalid token found in request")
@@ -140,7 +152,7 @@ def textbelt_webhook():
         if parsed.message_type == MessageType.FOOD_DRINK:
             cur.execute(
                 "INSERT INTO meals (phone_id, meal) VALUES (%s, %s)",
-                (phone_id, parsed.description),
+                (phone_id, _encrypt(parsed.description, public_key)),
             )
         elif parsed.message_type == MessageType.FEEL:
             cur.execute(
@@ -150,17 +162,25 @@ def textbelt_webhook():
                     VALUES (%s, %s, %s)
                     """
                 ),
-                (phone_id, parsed.description, json.dumps(parsed.symptoms)),
+                (
+                    phone_id,
+                    _encrypt(parsed.description, public_key),
+                    _encrypt(json.dumps(parsed.symptoms), public_key),
+                ),
             )
         elif parsed.message_type == MessageType.BM:
             cur.execute(
                 "INSERT INTO bms (phone_id, bm_description) VALUES (%s, %s)",
-                (phone_id, parsed.description),
+                (phone_id, _encrypt(parsed.description, public_key)),
             )
         elif parsed.message_type == MessageType.SLEEP:
             cur.execute(
                 "INSERT INTO sleeps (phone_id, description, hours) VALUES (%s, %s, %s)",
-                (phone_id, parsed.description, parsed.hours),
+                (
+                    phone_id,
+                    _encrypt(parsed.description, public_key),
+                    _encrypt(parsed.hours, public_key),
+                ),
             )
         else:
             raise Exception(f"unsupported message type: {parsed.message_type}")

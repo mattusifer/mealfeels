@@ -32,12 +32,15 @@ app = create_app()
 app.debug = True
 app.config["LOCAL_DEV"] = True
 
+logging.info("clearing db")
+subprocess.run(["psql", "-f", "tests/clear.sql"], check=True)
+
 with app.app_context():
     logging.info("initializing db")
     init_db()
 
 logging.info("seeding db")
-subprocess.run(["psql", "-f", "tests/seed.sql"], capture_output=True, check=True)
+subprocess.run(["psql", "-f", "tests/seed.sql"], check=True)
 
 logger.info(f"serving from {root_folder}")
 server = Server(app.wsgi_app)

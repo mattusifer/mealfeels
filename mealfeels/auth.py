@@ -18,6 +18,7 @@ from flask import (
 )
 import phonenumbers
 from phonenumbers.phonenumberutil import NumberParseException
+import psycopg2.extras
 
 from mealfeels.db import get_db
 from mealfeels.textbelt import send_message
@@ -115,22 +116,27 @@ def verify():
                 error = "Invalid verification code"
             else:
                 cur.execute(
-                    "UPDATE phones SET verified=true WHERE phone = %s",
+                    "UPDATE phones SET verified=true WHERE phone = %s RETURNING public_key IS NOT NULL",
                     (phone,),
                 )
                 db.commit()
-
-                send_message(
-                    phone,
-                    current_app.config["TEXTBELT_API_KEY"],
-                    "👋 Welcome to Mealfeels. Respond to this text to start tracking.",
-                    token=token,
-                    reply_webhook_url=current_app.config["REPLY_WEBHOOK_URL"],
-                )
+                result = cur.fetchone()
 
                 session.clear()
                 session["phone_id"] = phone_id
-                return redirect(url_for("home.symptoms"))
+
+                if result is not None and result:
+                    # new user
+                    return redirect(url_for("auth.setup_encryption", new_user=True))
+                else:
+                    send_message(
+                        phone,
+                        current_app.config["TEXTBELT_API_KEY"],
+                        "👋 Welcome to Mealfeels. Respond to this text to start tracking.",
+                        token=token,
+                        reply_webhook_url=current_app.config["REPLY_WEBHOOK_URL"],
+                    )
+                    return redirect(url_for("home.symptoms"))
 
         flash(error)
 
@@ -139,16 +145,16 @@ def verify():
 
 @bp.before_app_request
 def load_logged_in_phone():
-    if current_app.config.get("LOCAL_DEV"):
-        phone_id = 1
-    else:
-        phone_id = session.get("phone_id")
+    # if current_app.config.get("LOCAL_DEV"):
+    #     phone_id = 1
+    # else:
+    phone_id = session.get("phone_id")
 
     if phone_id is None:
         g.phone = None
     else:
         db = get_db()
-        cur = db.cursor()
+        cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
         cur.execute("SELECT * FROM phones WHERE id = %s", (phone_id,))
         row = cur.fetchone()
         if row is not None:
@@ -173,3 +179,38 @@ def login_required(view):
         return view(**kwargs)
 
     return wrapped_view
+
+
+@bp.route("/setup-encryption", methods=("GET", "POST"))
+@login_required
+def setup_encryption():
+    if request.method == "POST":
+        send_message(
+            g.phone[1],
+            current_app.config["TEXTBELT_API_KEY"],
+            "👋 Welcome to Mealfeels. Respond to this text to start tracking.",
+            token=g.phone[2],
+            reply_webhook_url=current_app.config["REPLY_WEBHOOK_URL"],
+        )
+        return redirect(url_for("home.symptoms"))
+
+    return render_template(
+        "auth/setup_encryption.html", newUser=request.args.get("new_user")
+    )
+
+
+@bp.route("/set-public-key", methods=("POST",))
+@login_required
+def set_public_key():
+    db = get_db()
+    cur = db.cursor()
+
+    public_key = request.get_data()
+
+    cur.execute(
+        "UPDATE phones SET public_key = %s WHERE id = %s",
+        (public_key, g.phone[0]),
+    )
+
+    db.commit()
+    return "OK", 201

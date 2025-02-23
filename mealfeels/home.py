@@ -1,5 +1,6 @@
 import logging
 import textwrap
+import json
 
 from flask import Blueprint, flash, g, redirect, render_template, request, url_for
 from werkzeug.exceptions import abort
@@ -16,9 +17,9 @@ logger = logging.getLogger(__name__)
 @bp.route("/symptoms")
 @login_required
 def symptoms():
-    logged_in_phone_id = g.phone[0]
+    logged_in_phone_id = g.phone["id"]
     phone_number = phonenumbers.format_number(
-        phonenumbers.parse(g.phone[1], "US"),
+        phonenumbers.parse(g.phone["phone"], "US"),
         phonenumbers.PhoneNumberFormat.NATIONAL,
     )
 
@@ -48,6 +49,21 @@ def symptoms():
     )
     meals = list(cur.fetchall())
 
+    if g.phone["public_key"] is not None:
+        # these are encrypted, send them as hex encoded srings
+        symptoms = [(symptom.hex(), created_at) for symptom, created_at in symptoms]
+        meals = [(meal.hex(), created_at) for meal, created_at in meals]
+    else:
+        # these are not encrypted, simply decode the strings
+        symptoms = [
+            (json.loads(symptom.tobytes().decode()), created_at)
+            for symptom, created_at in symptoms
+        ]
+        meals = [(meal.tobytes().decode(), created_at) for meal, created_at in meals]
+
     return render_template(
-        "home/symptoms.html", phone_number=phone_number, symptoms=symptoms, meals=meals
+        "home/symptoms.html",
+        phone_number=phone_number,
+        symptoms=symptoms,
+        meals=meals,
     )
