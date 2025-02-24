@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS phones (
   token VARCHAR NOT NULL,
   verification_code VARCHAR,
   verified BOOLEAN NOT NULL DEFAULT false,
-  public_key bytea,
+  public_key VARCHAR,
   created_at TIMESTAMP WITH TIME ZONE default now()
 );
 

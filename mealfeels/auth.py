@@ -205,7 +205,7 @@ def set_public_key():
     db = get_db()
     cur = db.cursor()
 
-    public_key = request.get_data()
+    public_key = request.json()
 
     cur.execute(
         "UPDATE phones SET public_key = %s WHERE id = %s",

@@ -9,7 +9,9 @@
 
   {% if newUser %}
   <form method="post">
-      Here is your private key. Save this somewhere safe.
+      Here is your private key.
+      <br>
+      Save this somewhere safe!
       <pre id="privateKey"></pre>
       <input type="submit" value="OK">
   </form>
@@ -44,10 +46,10 @@
 
        // TODO: wrapKey to encrypt the private key
        const exportedPrivateKeyBytes = await window.crypto.subtle.exportKey(
-           "jwk",
+           "pkcs8",
            keyPair.privateKey
        )
-       const exportedPrivateKey = JSON.stringify(exportedPrivateKeyBytes, null, " ");
+       const exportedPrivateKey = `-----BEGIN PRIVATE KEY-----\n${window.btoa(exportedPrivateKeyBytes)}\n-----END PRIVATE KEY-----`;
 
        const exportedPublicKeyBytes = await window.crypto.subtle.exportKey(
            "jwk",
@@ -55,21 +57,23 @@
        )
        var setPublicKeyResponse = await fetch("{{ url_for('auth.set_public_key') }}", {
            method: "POST",
-           body: exportedPublicKeyBytes
+           headers: {
+               "Content-Type": "application/json"
+           },
+           body: JSON.stringify(exportedPublicKeyBytes),
        });
 
        return [setPublicKeyResponse, exportedPrivateKey]
    }
 
    generateKeys().then(([setPublicKeyResponse, exportedPrivateKey]) => {
-       console.log(setPublicKeyResponse);
        if (setPublicKeyResponse.status == 201) {
            localStorage.setItem("mealfeels-private-key", exportedPrivateKey)
            document.getElementById("privateKey").innerHTML = exportedPrivateKey;
        } else {
            document.getElementById("privateKey").innerHTML = "Error sending public key to server."
        }
-   });
+   }).catch((e) => console.error(e));
    {% endif %}
   </script>
 {% endblock %}
